@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 會議室預約看板：純前端（HTML + CSS + 原生 JS），無建置步驟、無相依套件，資料存在 localStorage。需求與驗收標準（AC1–AC15）以 `spec.md` 為準；「非目標」一節列出本版刻意不做的功能（登入、後端同步、重複預約、跨日預約等），新增功能前先對照。
 
+技術限制：前端限定 `index.html` + `style.css` + `app.js` + `test.html` 四檔，禁止再拆分其他檔案、禁止外部框架；`app.js` 以一般 `<script src="app.js">` 載入，不要改成 ES module（頁面需能直接雙擊開啟）。`tests/`、`package.json` 屬測試工具，不在此限。
+
 UI 文字、程式註解與測試訊息皆使用繁體中文，修改時請維持一致。
 
 ## 指令

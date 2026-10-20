@@ -77,6 +77,7 @@
 ## 5. 技術限制
 
 - **純前端**：HTML + CSS + JavaScript，不需要後端或建置工具也能執行（可直接開啟 `index.html` 或用靜態伺服器提供）
+- **檔案結構**：前端限定 `index.html` + `style.css` + `app.js` + `test.html` 四檔，禁止再拆分其他檔案、禁止外部框架；`app.js` 以一般 `<script>` 載入（不使用 ES module，確保雙擊開啟可運作）。`tests/`、`package.json` 為自動化測試工具，不在此限
 - **資料儲存**：localStorage，以單一 key 存放 JSON 陣列
 - **已知限制**：資料只存在當前瀏覽器，**不同電腦或瀏覽器之間看不到彼此的預約**；清除瀏覽器資料會讓預約遺失。本版定位為單機示範版，未來若要團隊共用，需改成前後端架構
 - **支援瀏覽器**：最新版 Chrome / Edge / Firefox
