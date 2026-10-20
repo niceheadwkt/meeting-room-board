@@ -229,6 +229,40 @@ check('（補）預約明細：本週本會議室、依時間排序、篩選淡�
   && r.count.includes('共 3 筆') && r.count.includes('王小明 2 筆'), JSON.stringify({ a: r.a, count: r.count }));
 check('（補）預約明細：點選開啟修改、切換會議室與週會更新', r.dlg === '修改預約' && r.editTitle === '接續會議'
   && JSON.stringify(r.inB) === '["B 室會議"]' && r.empty.includes('這週沒有預約'), JSON.stringify({ dlg: r.dlg, editTitle: r.editTitle, inB: r.inB, empty: r.empty }));
+// 匯出 CSV：攔截 createObjectURL 與 <a>.click 取得檔名與內容，不實際下載
+const CAP = `
+  const capture = async (fn) => {
+    const oc = URL.createObjectURL, ok = HTMLAnchorElement.prototype.click; let blob = null, name = null;
+    URL.createObjectURL = (b) => { blob = b; return 'blob:test'; };
+    HTMLAnchorElement.prototype.click = function () { name = this.download; };
+    try { fn(); } finally { URL.createObjectURL = oc; HTMLAnchorElement.prototype.click = ok; }
+    if (!blob) return null;
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    return { name, bom: bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF, text: new TextDecoder().decode(bytes.slice(3)) };
+  };
+`;
+r = await ev(`${H} ${CAP} const today = ymd(new Date()), def = $('exportDate').value;
+  const out = await capture(() => $('exportCsv').click());
+  fill({ exportDate: '' }); const none = await capture(() => $('exportCsv').click()); fill({ exportDate: today });
+  return { today, def, out, none };`);
+{
+  const t = r.today;
+  const expected = ['會議室,日期,時段,預約人', `A 會議室,${t},09:00–10:00,王小明`, `A 會議室,${t},10:00–11:00,李四`,
+    `A 會議室,${t},15:00–16:00,王小明`, `B 會議室,${t},09:00–10:00,張三`].join('\r\n') + '\r\n';
+  check('AC15 匯出 CSV：選定日期所有會議室、依會議室與時間排序、不受篩選影響', r.def === t && r.out?.name === `會議室預約_${t}.csv`
+    && r.out.bom && r.out.text === expected && r.none === null, JSON.stringify(r));
+}
+
+// 匯出 CSV：逗號、引號與公式開頭的跳脫（在兩週後的 C 會議室建立再刪除，不影響後續檢查）
+r = await ev(`${H} ${CAP} const d = new Date(); d.setDate(d.getDate() + 14); const day = ymd(d);
+  $('newBooking').click(); fill({ fRoom: 'C', fDate: day, fStart: '10:00', fEnd: '11:00', fBooker: '=陳,"大"', fTitle: '跳脫測試' }); submit();
+  fill({ exportDate: day }); const out = await capture(() => $('exportCsv').click()); fill({ exportDate: ymd(new Date()) });
+  [...document.querySelectorAll('.booking')].find((b) => b.textContent.includes('跳脫測試')).click();
+  window.confirm = () => true; $('deleteBtn').click();
+  document.querySelectorAll('#roomTabs button')[0].click(); $('thisWeek').click();
+  return { day, line: out && out.text.split('\\r\\n')[1], remain: stored().some((b) => b.title === '跳脫測試') };`);
+check('（補）匯出 CSV：特殊字元與公式開頭會跳脫', r.line === `C 會議室,${r.day},10:00–11:00,"'=陳,""大"""` && !r.remain, JSON.stringify(r));
+
 await send('Page.captureScreenshot', { format: 'png' }).then((x) => writeFileSync(join(outDir, 'board.png'), Buffer.from(x.result.data, 'base64')));
 await ev(`${H} fill({ bookerFilter: '' });`);
 

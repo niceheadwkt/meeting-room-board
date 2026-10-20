@@ -132,6 +132,7 @@
   const deleteBtn = $('deleteBtn');
   const detailsBody = $('detailsBody');
   const detailsCount = $('detailsCount');
+  const exportDate = $('exportDate');
 
   // ---- 繪製 ----
   function bookerNames() {
@@ -426,6 +427,37 @@
     render();
   }
 
+  // ---- 匯出 ----
+  // 含逗號、引號或換行時加上引號；開頭為 = + - @ 時前置單引號，避免試算表當成公式執行
+  const csvCell = (v) => {
+    let s = String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  // 匯出選定日期所有會議室的預約，依會議室順序與開始時間排序；不受預約人篩選影響
+  function exportCsv() {
+    const date = exportDate.value;
+    if (!date) {
+      exportDate.focus();
+      return;
+    }
+    const order = (id) => ROOMS.findIndex((r) => r.id === id);
+    const rows = state.bookings
+      .filter((b) => b.date === date)
+      .sort((a, b) => order(a.roomId) - order(b.roomId) || a.start.localeCompare(b.start))
+      .map((b) => [ROOMS[order(b.roomId)].name, b.date, `${b.start}–${b.end}`, b.booker]);
+    const csv = [['會議室', '日期', '時段', '預約人'], ...rows]
+      .map((r) => r.map(csvCell).join(',')).join('\r\n');
+    // 加上 BOM，Excel 才會以 UTF-8 開啟
+    const url = URL.createObjectURL(new Blob(['﻿', csv, '\r\n'], { type: 'text/csv;charset=utf-8' }));
+    const a = el('a');
+    a.href = url;
+    a.download = `會議室預約_${date}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   // ---- 事件 ----
   $('prevWeek').addEventListener('click', () => {
     state.weekStart = addDays(state.weekStart, -7);
@@ -440,6 +472,7 @@
     render();
   });
   $('newBooking').addEventListener('click', () => openForm(null));
+  $('exportCsv').addEventListener('click', exportCsv);
   bookerFilter.addEventListener('change', () => {
     state.filter = bookerFilter.value;
     renderGrid();
@@ -478,6 +511,7 @@
 
   // ---- 啟動 ----
   fillTimeOptions();
+  exportDate.value = toDateStr(new Date());
   render();
   // 留半格空間，避免整點標籤被固定的表頭遮住
   calendar.scrollTop = DEFAULT_SCROLL_HOUR * (60 / SLOT_MIN) * SLOT_PX - SLOT_PX / 2;

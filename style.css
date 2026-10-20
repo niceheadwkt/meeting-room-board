@@ -183,6 +183,20 @@ select, input, textarea {
 }
 .filter option { background: var(--surface); color: var(--text); }
 
+.export { display: flex; align-items: center; gap: 6px; }
+.export input {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--sign-text);
+  color-scheme: dark;
+}
+.export button {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--sign-text);
+}
+.export button:hover { border-color: var(--sign-text); }
+
 .topbar #newBooking {
   margin-left: auto;
   padding: 8px 16px;

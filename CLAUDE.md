@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案概要
 
-會議室預約看板：純前端（HTML + CSS + 原生 JS），無建置步驟、無相依套件，資料存在 localStorage。需求與驗收標準（AC1–AC14）以 `spec.md` 為準；「非目標」一節列出本版刻意不做的功能（登入、後端同步、重複預約、跨日預約等），新增功能前先對照。
+會議室預約看板：純前端（HTML + CSS + 原生 JS），無建置步驟、無相依套件，資料存在 localStorage。需求與驗收標準（AC1–AC15）以 `spec.md` 為準；「非目標」一節列出本版刻意不做的功能（登入、後端同步、重複預約、跨日預約等），新增功能前先對照。
 
 UI 文字、程式註解與測試訊息皆使用繁體中文，修改時請維持一致。
 
@@ -26,4 +26,4 @@ UI 文字、程式註解與測試訊息皆使用繁體中文，修改時請維�
 
 ## 測試的運作方式
 
-`tests/ac-test.mjs` 不使用任何測試框架：它啟動 headless Chrome（`--remote-debugging-port=0`，從 profile 內的 `DevToolsActivePort` 讀取埠號），透過 CDP 開啟 `file://` 的 `index.html`，以 `Runtime.evaluate` 在頁面內操作 DOM 並逐條檢查 AC。測試依賴 DOM 的 id（`fBooker`、`fTitle`、`bookingForm`、`formError`、`weekLabel`、`roomTabs` 等）與 class（`.day-col.today`、`.booking`、`.dimmed`、`.now-line`），以及錯誤訊息中的關鍵字（「姓名」「主題」「結束時間」「衝突」「正整數」），更動這些時要同步更新測試。結束時以 CDP `Browser.close` 關閉，失敗時由 `cleanup()` 依 profile 路徑強制結束殘留的 Chrome 行程。
+`tests/ac-test.mjs` 不使用任何測試框架：它啟動 headless Chrome（`--remote-debugging-port=0`，從 profile 內的 `DevToolsActivePort` 讀取埠號），透過 CDP 開啟 `file://` 的 `index.html`，以 `Runtime.evaluate` 在頁面內操作 DOM 並逐條檢查 AC。測試依賴 DOM 的 id（`fBooker`、`fTitle`、`bookingForm`、`formError`、`weekLabel`、`roomTabs`、`exportDate`、`exportCsv` 等）與 class（`.day-col.today`、`.booking`、`.dimmed`、`.now-line`），以及錯誤訊息中的關鍵字（「姓名」「主題」「結束時間」「衝突」「正整數」），更動這些時要同步更新測試。結束時以 CDP `Browser.close` 關閉，失敗時由 `cleanup()` 依 profile 路徑強制結束殘留的 Chrome 行程。
