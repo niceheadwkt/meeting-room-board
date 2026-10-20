@@ -1,35 +1,51 @@
+/* 設計方向：大樓指標系統（門牌、樓層指引）
+   深藍指標底 + 訊號黃只用在「今天」與「新增預約」；數字用窄體 Barlow，中文用 Noto Sans TC */
 :root {
-  --bg: #f6f7f9;
+  --bg: #e9edf0;
   --surface: #ffffff;
-  --text: #1d2330;
-  --muted: #667085;
-  --line: #e4e7ec;
-  --line-strong: #cfd4dc;
-  --accent: #2f6fde;
+  --text: #17324d;
+  --muted: #5e6e7e;
+  --line: #e1e6eb;
+  --line-strong: #c7d0d9;
+  --sign: #17324d;
+  --sign-text: #f3f6f8;
+  --sign-muted: #9fb2c4;
+  --signal: #f5c518;
+  --signal-text: #17324d;
+  --accent: #17324d;
   --accent-text: #ffffff;
-  --today-bg: #eef4ff;
-  --now: #e5484d;
-  --danger: #d92d20;
+  --today-bg: #fdf8e3;
+  --now: #e0352b;
+  --danger: #c4321f;
+  --focus: #2b6cb0;
   --slot: 24px;
-  --block-l: 92%;
-  --block-border-l: 42%;
-  --block-text: #1d2330;
+  --block-l: 91%;
+  --block-border-l: 40%;
+  --block-text: #17324d;
+  --font: "Barlow Semi Condensed", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --font-text: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #12151b;
-    --surface: #1a1e26;
-    --text: #e6e9ef;
-    --muted: #98a2b3;
-    --line: #2a303b;
-    --line-strong: #3a4250;
-    --accent: #5b8ef0;
-    --today-bg: #1d2840;
-    --block-l: 26%;
+    --bg: #0d1823;
+    --surface: #13212f;
+    --text: #e4ecf3;
+    --muted: #8fa1b3;
+    --line: #213244;
+    --line-strong: #2f4357;
+    --sign: #0a1520;
+    --sign-text: #e4ecf3;
+    --sign-muted: #7f93a7;
+    --accent: #f5c518;
+    --accent-text: #17324d;
+    --today-bg: #1c2a2a;
+    --danger: #f0715f;
+    --focus: #f5c518;
+    --block-l: 25%;
     --block-border-l: 62%;
-    --block-text: #eef1f6;
+    --block-text: #eef3f7;
     color-scheme: dark;
   }
 }
@@ -40,8 +56,9 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-family: var(--font-text);
   font-size: 14px;
+  line-height: 1.5;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -55,72 +72,143 @@ button, select, input, textarea {
 button {
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 6px 12px;
   cursor: pointer;
 }
-button:hover { border-color: var(--accent); }
+button:hover { border-color: var(--text); }
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
+  font-weight: 500;
 }
 button.danger {
   color: var(--danger);
   border-color: var(--danger);
 }
-.icon-btn { padding: 6px 10px; font-weight: 600; }
+.icon-btn { padding: 4px 10px; font-weight: 700; font-size: 16px; line-height: 1.2; }
 
 select, input, textarea {
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 6px 8px;
 }
 
-/* ---- top bar ---- */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---- 頂部指標帶 ---- */
 .topbar {
-  padding: 12px 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  padding: 14px 20px 16px;
+  background: var(--sign);
+  color: var(--sign-text);
+  border-bottom: 4px solid var(--signal);
 }
 .topbar h1 {
-  margin: 0 0 10px;
-  font-size: 18px;
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--sign-muted);
 }
+.topbar :focus-visible { outline-color: var(--signal); }
 .toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 20px;
+  gap: 12px 24px;
 }
-.room-tabs { display: flex; gap: 4px; }
-.room-tabs button[aria-selected="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
-}
-.week-nav { display: flex; align-items: center; gap: 6px; }
-.week-label { margin-left: 6px; font-weight: 600; }
-.filter { display: flex; align-items: center; gap: 6px; color: var(--muted); }
-#newBooking { margin-left: auto; }
 
-/* ---- calendar ---- */
+/* 會議室門牌：首字放大成方形字牌 */
+.room-tabs { display: flex; gap: 8px; }
+.room-tabs button {
+  display: inline-block;
+  padding: 5px 14px 5px 5px;
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 3px;
+  color: var(--sign-muted);
+  font-weight: 500;
+  line-height: 32px;
+}
+.room-tabs button::first-letter {
+  float: left;
+  padding: 0 9px;
+  margin-right: 10px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.14);
+  color: var(--sign-text);
+  font-family: var(--font);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 32px;
+  text-align: center;
+}
+.room-tabs button:hover { border-color: var(--sign-text); color: var(--sign-text); }
+.room-tabs button[aria-selected="true"] {
+  background: var(--sign-text);
+  border-color: var(--sign-text);
+  color: var(--sign);
+}
+.room-tabs button[aria-selected="true"]::first-letter {
+  background: var(--sign);
+  color: var(--sign-text);
+}
+
+.week-nav { display: flex; align-items: center; gap: 6px; }
+.week-nav button {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--sign-text);
+}
+.week-nav button:hover { border-color: var(--sign-text); }
+.week-label {
+  margin-left: 8px;
+  font-family: var(--font);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.filter { display: flex; align-items: center; gap: 8px; color: var(--sign-muted); }
+.filter select {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--sign-text);
+}
+.filter option { background: var(--surface); color: var(--text); }
+
+.topbar #newBooking {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--signal-text);
+  font-weight: 700;
+}
+.topbar #newBooking:hover { filter: brightness(1.06); }
+
+/* ---- 週視圖 ---- */
 main {
   flex: 1;
   min-height: 0;
-  padding: 12px 16px 16px;
+  padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 .calendar {
   flex: 1;
   min-height: 200px;
   overflow: auto;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
 }
 .cal-grid {
   display: grid;
@@ -132,35 +220,49 @@ main {
   top: 0;
   z-index: 3;
   background: var(--surface);
-  border-bottom: 1px solid var(--line-strong);
-  height: 44px;
+  border-bottom: 2px solid var(--text);
+  height: 52px;
 }
 .corner { left: 0; z-index: 4; }
 .day-head {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 14px 10px 0;
   border-left: 1px solid var(--line);
   line-height: 1.2;
 }
-.day-head .dow { color: var(--muted); font-size: 12px; }
-.day-head .dom { font-weight: 600; }
-.day-head.today { background: var(--today-bg); }
-.day-head.today .dom { color: var(--accent); }
+.day-head .dom {
+  order: -1;
+  font-family: var(--font);
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.day-head .dow { color: var(--muted); font-size: 13px; }
+.day-head.today {
+  background: var(--today-bg);
+  box-shadow: inset 0 4px 0 var(--signal);
+}
+.day-head.today .dow { color: var(--text); font-weight: 700; }
 
 .time-col {
   position: sticky;
   left: 0;
   z-index: 2;
   background: var(--surface);
+  border-right: 1px solid var(--line-strong);
   height: calc(var(--slot) * 48);
 }
 .time-col span {
   position: absolute;
-  right: 6px;
+  right: 8px;
   transform: translateY(-50%);
-  font-size: 11px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
 .time-col span:first-child { transform: none; }
@@ -174,28 +276,37 @@ main {
     repeating-linear-gradient(to bottom, var(--line-strong) 0 1px, transparent 1px calc(var(--slot) * 2)),
     repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px var(--slot));
 }
+.time-col + .day-col { border-left: 0; }
+.day-col:hover { background-color: color-mix(in srgb, var(--bg) 45%, transparent); }
 .day-col.today { background-color: var(--today-bg); }
 
 .booking {
   position: absolute;
-  left: 3px;
-  right: 3px;
+  left: 4px;
+  right: 4px;
   z-index: 1;
   overflow: hidden;
   text-align: left;
-  padding: 2px 6px;
+  padding: 3px 7px;
   border: 0;
-  border-left: 4px solid hsl(var(--hue) 60% var(--block-border-l));
-  border-radius: 4px;
-  background: hsl(var(--hue) 70% var(--block-l));
+  border-left: 4px solid hsl(var(--hue) 55% var(--block-border-l));
+  border-radius: 2px;
+  background: hsl(var(--hue) 60% var(--block-l));
   color: var(--block-text);
   font-size: 12px;
-  line-height: 1.3;
+  line-height: 1.35;
 }
-.booking:hover { filter: brightness(0.97); outline: 1px solid hsl(var(--hue) 60% var(--block-border-l)); }
-.booking .b-title { font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.booking .b-meta { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.85; }
-.booking.dimmed { opacity: 0.28; }
+.booking:hover { outline: 1px solid hsl(var(--hue) 55% var(--block-border-l)); }
+.booking .b-title { font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.booking .b-meta {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+.booking.dimmed { opacity: 0.25; }
 
 .now-line {
   position: absolute;
@@ -209,29 +320,30 @@ main {
 .now-line::before {
   content: "";
   position: absolute;
-  left: -5px;
+  left: -1px;
   top: -4px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--now);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid var(--now);
 }
 
-/* ---- details ---- */
+/* ---- 預約明細 ---- */
 .details {
   flex: none;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
 }
 .details summary {
-  padding: 10px 14px;
-  font-weight: 600;
+  padding: 10px 16px;
+  font-weight: 700;
   cursor: pointer;
 }
 .details-count {
   margin-left: 10px;
-  font-weight: normal;
+  font-weight: 400;
   color: var(--muted);
 }
 .details-body {
@@ -252,11 +364,18 @@ main {
   font-size: 12px;
   font-weight: 500;
   text-align: left;
+  border-bottom-color: var(--line-strong);
 }
 .details-table :is(th, td) {
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
+}
+.details-table td:is(:nth-child(1), :nth-child(2), :nth-child(5)) {
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 .details-table tbody tr:last-child td { border-bottom: 0; }
 .details-table tbody tr[data-id] { cursor: pointer; }
@@ -268,12 +387,12 @@ main {
   text-overflow: ellipsis;
   color: var(--muted);
 }
-.details-table .empty { color: var(--muted); text-align: center; padding: 16px; }
+.details-table .empty { color: var(--muted); text-align: center; padding: 18px; }
 .details-table .link {
   padding: 0;
   border: 0;
   background: none;
-  font-weight: 600;
+  font-weight: 700;
   text-align: left;
 }
 .details-table .link:hover { text-decoration: underline; }
@@ -281,26 +400,32 @@ main {
   display: inline-block;
   width: 8px;
   height: 8px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: hsl(var(--hue) 60% var(--block-border-l));
+  margin-right: 8px;
+  border-radius: 1px;
+  background: hsl(var(--hue) 55% var(--block-border-l));
 }
 
-/* ---- dialog ---- */
+/* ---- 表單對話框 ---- */
 dialog {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 20px;
+  border: 0;
+  border-top: 6px solid var(--signal);
+  border-radius: 4px;
+  padding: 22px 24px 20px;
   width: min(520px, calc(100vw - 32px));
   background: var(--surface);
   color: var(--text);
+  box-shadow: 0 24px 60px rgb(10 25 40 / 0.35);
 }
-dialog::backdrop { background: rgb(0 0 0 / 0.4); }
-dialog h2 { margin: 0 0 16px; font-size: 17px; }
+dialog[open] { animation: dialog-in 160ms ease-out; }
+@keyframes dialog-in {
+  from { transform: translateY(8px); }
+}
+dialog::backdrop { background: rgb(13 24 35 / 0.55); }
+dialog h2 { margin: 0 0 18px; font-size: 18px; font-weight: 700; }
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 14px;
 }
 .form-grid label {
   display: flex;
@@ -313,22 +438,31 @@ dialog h2 { margin: 0 0 16px; font-size: 17px; }
 .span-2 { grid-column: span 2; }
 .req { color: var(--danger); }
 .form-error {
-  margin-top: 14px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--danger);
+  margin-top: 16px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  border-left: 4px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
   color: var(--danger);
   white-space: pre-line;
 }
 .dialog-actions {
   display: flex;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 20px;
 }
+.dialog-actions button { padding: 8px 16px; }
 .spacer { flex: 1; }
 
 @media (max-width: 640px) {
-  #newBooking { margin-left: 0; }
+  .topbar { padding: 12px 16px 14px; }
+  main { padding: 12px 16px 16px; }
+  .topbar #newBooking { margin-left: 0; }
+  .room-tabs button { padding-right: 10px; }
   .form-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] { animation: none; }
 }
