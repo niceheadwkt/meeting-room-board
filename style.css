@@ -50,6 +50,28 @@
   }
 }
 
+/* 手動切換深色（index.html 的主題按鈕）；配色須與上方系統深色模式同步 */
+:root[data-theme="dark"] {
+  --bg: #0d1823;
+  --surface: #13212f;
+  --text: #e4ecf3;
+  --muted: #8fa1b3;
+  --line: #213244;
+  --line-strong: #2f4357;
+  --sign: #0a1520;
+  --sign-text: #e4ecf3;
+  --sign-muted: #7f93a7;
+  --accent: #f5c518;
+  --accent-text: #17324d;
+  --today-bg: #1c2a2a;
+  --danger: #f0715f;
+  --focus: #f5c518;
+  --block-l: 25%;
+  --block-border-l: 62%;
+  --block-text: #eef3f7;
+  color-scheme: dark;
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -108,8 +130,23 @@ select, input, textarea {
   color: var(--sign-text);
   border-bottom: 4px solid var(--signal);
 }
+.topbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.topbar-head .theme-toggle {
+  background: transparent;
+  border-color: rgb(255 255 255 / 0.22);
+  color: var(--sign-text);
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+.topbar-head .theme-toggle:hover { border-color: var(--sign-text); }
 .topbar h1 {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.08em;
