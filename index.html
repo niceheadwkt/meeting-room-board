@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>會議室預約看板</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>會議室預約看板</h1>
+    <div class="toolbar">
+      <div class="room-tabs" id="roomTabs" role="tablist" aria-label="選擇會議室"></div>
+      <div class="week-nav">
+        <button type="button" id="prevWeek" class="icon-btn" aria-label="上一週">‹</button>
+        <button type="button" id="thisWeek">回到本週</button>
+        <button type="button" id="nextWeek" class="icon-btn" aria-label="下一週">›</button>
+        <span id="weekLabel" class="week-label"></span>
+      </div>
+      <label class="filter">
+        預約人
+        <select id="bookerFilter"></select>
+      </label>
+      <button type="button" id="newBooking" class="primary">＋ 新增預約</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="calendar" id="calendar">
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </main>
+
+  <dialog id="bookingDialog" aria-labelledby="dialogTitle">
+    <form id="bookingForm" novalidate>
+      <h2 id="dialogTitle">新增預約</h2>
+
+      <div class="form-grid">
+        <label><span>會議室 <span class="req">*</span></span>
+          <select name="roomId" id="fRoom"></select>
+        </label>
+        <label><span>日期 <span class="req">*</span></span>
+          <input type="date" name="date" id="fDate">
+        </label>
+        <label><span>開始時間 <span class="req">*</span></span>
+          <select name="start" id="fStart"></select>
+        </label>
+        <label><span>結束時間 <span class="req">*</span></span>
+          <select name="end" id="fEnd"></select>
+        </label>
+        <label><span>預約人姓名 <span class="req">*</span></span>
+          <input type="text" name="booker" id="fBooker" list="bookerList" maxlength="50" autocomplete="off">
+          <datalist id="bookerList"></datalist>
+        </label>
+        <label><span>與會人數</span>
+          <input type="number" name="attendees" id="fAttendees" min="1" step="1" inputmode="numeric">
+        </label>
+        <label class="span-2"><span>會議主題 <span class="req">*</span></span>
+          <input type="text" name="title" id="fTitle" maxlength="100">
+        </label>
+        <label class="span-2"><span>備註</span>
+          <textarea name="note" id="fNote" rows="3" maxlength="500"></textarea>
+        </label>
+      </div>
+
+      <div class="form-error" id="formError" role="alert" hidden></div>
+
+      <div class="dialog-actions">
+        <button type="button" id="deleteBtn" class="danger" hidden>刪除</button>
+        <span class="spacer"></span>
+        <button type="button" id="cancelBtn">取消</button>
+        <button type="submit" class="primary">儲存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

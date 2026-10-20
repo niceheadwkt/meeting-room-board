@@ -1,0 +1,12 @@
+{
+  "name": "meeting-room-board",
+  "version": "0.1.0",
+  "private": true,
+  "description": "會議室預約看板（純前端，localStorage）",
+  "scripts": {
+    "test": "node tests/ac-test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
