@@ -17,7 +17,7 @@ UI 文字、程式註解與測試訊息皆使用繁體中文，修改時請維�
 ## 架構
 
 - `app.js` 是單一 IIFE，依序分為：設定常數 → 日期／時間工具 → 資料存取（`loadBookings` / `saveBookings` / `findConflict`）→ `state` 物件 → 繪製函式 → 表單 → 事件綁定 → 啟動。
-- 繪製採「狀態改變後整體重繪」：修改 `state` 後呼叫 `render()`（或只呼叫 `renderGrid()`），各 `render*` 以 `replaceChildren` 重建 DOM，沒有增量更新。每分鐘的 `setInterval(renderGrid)` 負責更新目前時間線。
+- 繪製採「狀態改變後整體重繪」：修改 `state` 後呼叫 `render()`（或只呼叫 `renderGrid()`），各 `render*` 以 `replaceChildren` 重建 DOM，沒有增量更新。每分鐘的 `setInterval` 負責更新目前時間線；跨週時若使用者正在看本週，會自動切到新的一週（看其他週則不動）。
 - 時間一律以「當日分鐘數」計算（`toMin` / `toTime`），日期以本地時區的 `YYYY-MM-DD` 字串表示（`toDateStr` / `parseDate`），不要用 `Date.toISOString()`，否則會有時區偏移。一週從週一開始（`startOfWeek`）。
 - 預約色塊以絕對定位擺放：`top = (分鐘 / SLOT_MIN) * SLOT_PX`。`app.js` 的 `SLOT_PX` 必須與 `style.css` 的 `--slot` 相同（目前 24px），測試中的 `clickSlot` 與 AC4 的 `top === '433px'` 也寫死了這個值。
 - 衝突判斷：同會議室、同日期、`start < 他人.end && 他人.start < end`，並排除相同 `id`（修改時排除自己）；首尾相接不算重疊。

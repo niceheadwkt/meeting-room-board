@@ -130,6 +130,8 @@
   const fNote = $('fNote');
   const bookerList = $('bookerList');
   const deleteBtn = $('deleteBtn');
+  const detailsBody = $('detailsBody');
+  const detailsCount = $('detailsCount');
 
   // ---- 繪製 ----
   function bookerNames() {
@@ -241,11 +243,64 @@
     calGrid.replaceChildren(...nodes);
   }
 
+  // 看板下方的明細：所選會議室、目前這一週，依日期與開始時間排序
+  function renderDetails() {
+    const from = toDateStr(state.weekStart);
+    const to = toDateStr(addDays(state.weekStart, 6));
+    const list = state.bookings
+      .filter((b) => b.roomId === state.roomId && b.date >= from && b.date <= to)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+
+    const room = ROOMS.find((r) => r.id === state.roomId);
+    detailsCount.textContent = `${room.name}・共 ${list.length} 筆`
+      + (state.filter ? `（${state.filter} ${list.filter((b) => b.booker === state.filter).length} 筆）` : '');
+
+    if (!list.length) {
+      const td = el('td', 'empty', '這週沒有預約。');
+      td.colSpan = 6;
+      const tr = el('tr');
+      tr.append(td);
+      detailsBody.replaceChildren(tr);
+      return;
+    }
+
+    detailsBody.replaceChildren(...list.map((b) => {
+      const d = parseDate(b.date);
+      const tr = el('tr');
+      tr.dataset.id = b.id;
+      if (state.filter && b.booker !== state.filter) tr.classList.add('dimmed');
+
+      const titleBtn = el('button', 'link', b.title);
+      titleBtn.type = 'button';
+      const titleCell = el('td');
+      titleCell.append(titleBtn);
+      const dot = el('span', 'dot');
+      dot.style.setProperty('--hue', hueFor(b.booker));
+      const bookerCell = el('td');
+      bookerCell.append(dot, b.booker);
+      const noteCell = el('td', 'note', b.note || '');
+      noteCell.title = b.note || '';
+
+      tr.append(
+        el('td', null, `${d.getMonth() + 1}/${d.getDate()}（${WEEKDAYS[(d.getDay() + 6) % 7]}）`),
+        el('td', null, `${b.start}–${b.end}`),
+        titleCell,
+        bookerCell,
+        el('td', null, b.attendees ? String(b.attendees) : '—'),
+        noteCell,
+      );
+      // 主題按鈕的點擊會冒泡到這裡，鍵盤操作也走同一條路
+      tr.addEventListener('click', () => openForm(b));
+      return tr;
+    }));
+  }
+
   function render() {
     renderRoomTabs();
     renderWeekLabel();
     renderFilter();
     renderGrid();
+    renderDetails();
   }
 
   // ---- 表單 ----
@@ -388,6 +443,7 @@
   bookerFilter.addEventListener('change', () => {
     state.filter = bookerFilter.value;
     renderGrid();
+    renderDetails();
   });
 
   // 點擊空白格子：依點擊位置帶入日期與開始時間
@@ -407,8 +463,18 @@
   deleteBtn.addEventListener('click', onDelete);
   $('cancelBtn').addEventListener('click', () => dialog.close());
 
-  // 每分鐘更新目前時間線（跨日時也會更新今日標示）
-  setInterval(renderGrid, 60 * 1000);
+  // 每分鐘更新目前時間線與今日標示；跨週時若正在看本週，跟著切到新的一週
+  let currentWeek = startOfWeek(new Date());
+  setInterval(() => {
+    const week = startOfWeek(new Date());
+    if (week.getTime() === currentWeek.getTime()) {
+      renderGrid();
+      return;
+    }
+    if (state.weekStart.getTime() === currentWeek.getTime()) state.weekStart = week;
+    currentWeek = week;
+    render();
+  }, 60 * 1000);
 
   // ---- 啟動 ----
   fillTimeOptions();

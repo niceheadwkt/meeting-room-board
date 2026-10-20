@@ -29,6 +29,18 @@
     <div class="calendar" id="calendar">
       <div class="cal-grid" id="calGrid"></div>
     </div>
+
+    <details class="details" open>
+      <summary>預約明細<span class="details-count" id="detailsCount"></span></summary>
+      <div class="details-body">
+        <table class="details-table">
+          <thead>
+            <tr><th>日期</th><th>時間</th><th>會議主題</th><th>預約人</th><th>人數</th><th>備註</th></tr>
+          </thead>
+          <tbody id="detailsBody"></tbody>
+        </table>
+      </div>
+    </details>
   </main>
 
   <dialog id="bookingDialog" aria-labelledby="dialogTitle">

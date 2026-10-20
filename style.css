@@ -110,9 +110,13 @@ main {
   flex: 1;
   min-height: 0;
   padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .calendar {
-  height: 100%;
+  flex: 1;
+  min-height: 200px;
   overflow: auto;
   background: var(--surface);
   border: 1px solid var(--line);
@@ -211,6 +215,75 @@ main {
   height: 10px;
   border-radius: 50%;
   background: var(--now);
+}
+
+/* ---- details ---- */
+.details {
+  flex: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.details summary {
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.details-count {
+  margin-left: 10px;
+  font-weight: normal;
+  color: var(--muted);
+}
+.details-body {
+  max-height: 30vh;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+}
+.details-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+.details-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+.details-table :is(th, td) {
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.details-table tbody tr:last-child td { border-bottom: 0; }
+.details-table tbody tr[data-id] { cursor: pointer; }
+.details-table tbody tr[data-id]:hover { background: var(--bg); }
+.details-table tr.dimmed { opacity: 0.35; }
+.details-table .note {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+}
+.details-table .empty { color: var(--muted); text-align: center; padding: 16px; }
+.details-table .link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  text-align: left;
+}
+.details-table .link:hover { text-decoration: underline; }
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: hsl(var(--hue) 60% var(--block-border-l));
 }
 
 /* ---- dialog ---- */
