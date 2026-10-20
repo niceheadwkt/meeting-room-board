@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>findConflict 測試</title>
+  <style>
+    body { font-family: system-ui, "Noto Sans TC", sans-serif; margin: 24px; color: #222; }
+    h1 { font-size: 20px; }
+    #summary { font-weight: 700; padding: 8px 12px; border-radius: 4px; display: inline-block; }
+    #summary.pass { background: #e3f6e8; color: #16632e; }
+    #summary.fail { background: #fde5e5; color: #9b1c1c; }
+    table { border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; font-size: 14px; }
+    td.pass { color: #16632e; }
+    td.fail { color: #9b1c1c; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>findConflict 單元測試</h1>
+  <p id="summary">執行中…</p>
+  <table>
+    <thead><tr><th>#</th><th>案例</th><th>預期</th><th>實際</th><th>結果</th></tr></thead>
+    <tbody id="results"></tbody>
+  </table>
+
+  <script src="app.js"></script>
+  <script>
+    (() => {
+      'use strict';
+
+      // 建立預約資料，未指定的欄位用預設值
+      const bk = (id, start, end, extra = {}) => ({
+        id, roomId: 'A', date: '2026-10-20', start, end, booker: '王小明', title: '會議', ...extra,
+      });
+
+      const existing = [
+        bk('m1', '09:00', '10:00'),
+        bk('m2', '13:00', '14:30'),
+        bk('b1', '09:00', '10:00', { roomId: 'B' }),
+        bk('d1', '09:00', '10:00', { date: '2026-10-21' }),
+      ];
+
+      // expected：預期衝突對象的 id，null 表示不衝突
+      const cases = [
+        ['清單為空時不衝突', [], bk('n', '09:00', '10:00'), null],
+        ['時段完全相同', existing, bk('n', '09:00', '10:00'), 'm1'],
+        ['開始時間落在既有預約中', existing, bk('n', '09:30', '10:30'), 'm1'],
+        ['結束時間落在既有預約中', existing, bk('n', '08:30', '09:30'), 'm1'],
+        ['新預約包住既有預約', existing, bk('n', '08:00', '11:00'), 'm1'],
+        ['新預約被既有預約包住', existing, bk('n', '13:30', '14:00'), 'm2'],
+        ['首尾相接（新的接在後面）不算重疊', existing, bk('n', '10:00', '11:00'), null],
+        ['首尾相接（新的接在前面）不算重疊', existing, bk('n', '08:00', '09:00'), null],
+        ['夾在兩筆之間剛好填滿不算重疊', existing, bk('n', '10:00', '13:00'), null],
+        ['不同會議室同時段不衝突', existing, bk('n', '13:00', '14:30', { roomId: 'C' }), null],
+        ['不同日期同時段不衝突', existing, bk('n', '13:00', '14:30', { date: '2026-10-22' }), null],
+        ['修改時排除自己', existing, bk('m1', '09:00', '10:30'), null],
+        ['修改自己但與他人重疊仍衝突', existing, bk('m1', '09:00', '13:30'), 'm2'],
+        ['B 會議室只與 B 的預約比對', existing, bk('n', '09:30', '10:30', { roomId: 'B' }), 'b1'],
+        ['跨到午夜 24:00 的預約', [bk('x', '23:00', '24:00')], bk('n', '23:30', '24:00'), 'x'],
+        ['接在 23:30 結束之後到 24:00 不衝突', [bk('x', '22:00', '23:30')], bk('n', '23:30', '24:00'), null],
+      ];
+
+      const tbody = document.getElementById('results');
+      let failed = 0;
+
+      cases.forEach(([name, list, candidate, expected], i) => {
+        let actual;
+        try {
+          const hit = findConflict(list, candidate);
+          actual = hit ? hit.id : null;
+        } catch (err) {
+          actual = `錯誤：${err.message}`;
+        }
+        const ok = actual === expected;
+        if (!ok) failed += 1;
+
+        const tr = document.createElement('tr');
+        const cells = [i + 1, name, expected ?? '不衝突', actual ?? '不衝突', ok ? '通過' : '失敗'];
+        cells.forEach((text, j) => {
+          const td = document.createElement('td');
+          td.textContent = text;
+          if (j === cells.length - 1) td.className = ok ? 'pass' : 'fail';
+          tr.append(td);
+        });
+        tbody.append(tr);
+      });
+
+      const summary = document.getElementById('summary');
+      summary.textContent = failed === 0
+        ? `全部通過：${cases.length} / ${cases.length}`
+        : `失敗 ${failed} 筆，共 ${cases.length} 筆`;
+      summary.className = failed === 0 ? 'pass' : 'fail';
+      // 方便自動化讀取結果
+      document.title = `${failed === 0 ? 'PASS' : 'FAIL'} findConflict 測試`;
+    })();
+  </script>
+</body>
+</html>

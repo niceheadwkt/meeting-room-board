@@ -14,11 +14,12 @@ UI 文字、程式註解與測試訊息皆使用繁體中文，修改時請維�
 
 - 執行：直接開啟 `index.html`，或用任何靜態伺服器提供此資料夾。
 - 測試：`npm test`（= `node tests/ac-test.mjs`）。需要 Node 22 以上（使用內建 `fetch` / `WebSocket`）與本機 Chrome 或 Edge；找不到瀏覽器時以環境變數 `CHROME_PATH` 指定。截圖輸出到 `tests/output/`（已 gitignore）。
+- 單元測試：直接開啟 `test.html`，測試 `findConflict` 的各種重疊情況；頁面標題會變成 `PASS …` 或 `FAIL …`。
 - 沒有 lint 設定，也沒有單一測試的執行方式：`ac-test.mjs` 是一支依序執行的腳本，後面的檢查依賴前面建立的預約狀態（例如 AC9 修改的是 AC4 建立的「週會」），不能單獨跑某一條。要除錯某條 AC 時，可暫時註解掉其後的區塊。
 
 ## 架構
 
-- `app.js` 是單一 IIFE，依序分為：設定常數 → 日期／時間工具 → 資料存取（`loadBookings` / `saveBookings` / `findConflict`）→ `state` 物件 → 繪製函式 → 表單 → 事件綁定 → 啟動。
+- `app.js` 是單一 IIFE，依序分為：設定常數 → 日期／時間工具 → 資料存取（`loadBookings` / `saveBookings` / `findConflict`）→ `state` 物件 → 繪製函式 → 表單 → 事件綁定 → 啟動。`findConflict` 另外掛在 `window` 上供 `test.html` 呼叫；頁面上沒有 `#calendar` 時（即 `test.html`），IIFE 在 `state` 之前就 `return`，不初始化 UI。
 - 繪製採「狀態改變後整體重繪」：修改 `state` 後呼叫 `render()`（或只呼叫 `renderGrid()`），各 `render*` 以 `replaceChildren` 重建 DOM，沒有增量更新。每分鐘的 `setInterval` 負責更新目前時間線；跨週時若使用者正在看本週，會自動切到新的一週（看其他週則不動）。
 - 時間一律以「當日分鐘數」計算（`toMin` / `toTime`），日期以本地時區的 `YYYY-MM-DD` 字串表示（`toDateStr` / `parseDate`），不要用 `Date.toISOString()`，否則會有時區偏移。一週從週一開始（`startOfWeek`）。
 - 預約色塊以絕對定位擺放：`top = (分鐘 / SLOT_MIN) * SLOT_PX`。`app.js` 的 `SLOT_PX` 必須與 `style.css` 的 `--slot` 相同（目前 24px），測試中的 `clickSlot` 與 AC4 的 `top === '433px'` 也寫死了這個值。

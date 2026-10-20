@@ -94,6 +94,12 @@
     return (h * 137) % 360;
   }
 
+  // 供 test.html 直接測試
+  window.findConflict = findConflict;
+
+  // 非看板頁面（如 test.html）只需要上方的純函式，不初始化 UI
+  if (!document.getElementById('calendar')) return;
+
   // ---- 狀態 ----
   const state = {
     bookings: loadBookings(),
